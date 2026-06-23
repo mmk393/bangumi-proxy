@@ -1,39 +1,39 @@
 /**
- * Bangumi 反向代理 - Cloudflare Worker 版
- * --------------------------------------------------
- * 代理：
- *   api.bgm.tv   (v0 REST API)   ->  你的 API 域名
- *   lain.bgm.tv  (图片 CDN)       ->  你的图片域名
- *
- * 关键点：API 返回的 JSON 里图片地址是写死的 lain.bgm.tv 绝对 URL，
- * 本 Worker 会自动把响应体里的 lain.bgm.tv 改写成你的图片域名，
- * 这样客户端拿到数据后只访问你的域名，不会再碰被污染的 bgm.tv。
- *
- * ============== 部署（3 步）==============
- *  1. 把下面 CONFIG 里的 API_HOST / IMG_HOST 改成你的两个域名。
- *  2. Cloudflare Dashboard -> Workers & Pages -> Create -> 贴入本文件 -> Deploy。
- *  3. 进入该 Worker -> Settings -> Domains & Routes -> Add Custom Domain，
- *     把上面填的两个域名都绑上去。
- *
- * 域名随便取、根域不限，只要这里填对哪个是 API、哪个是图片即可。
- * 调试：访问 https://你的域名/__health 查看识别到的角色和上游。
- */
+* Bangumi 反向代理 - Cloudflare Worker 版
+* --------------------------------------------------
+* 代理：
+*   api.bgm.tv   (v0 REST API)   ->  api.xxr.com
+* lain.bgm.tv (图片 CDN) -> lain.xxr.com
+输入：  *
+* 关键点：API 返回的 JSON 里图片地址是写死的 lain.bgm.tv 绝对 URL，
+* 本 Worker 会自动把响应体里的 lain.bgm.tv 改写成你的图片域名，
+* 这样客户端拿到数据后只访问你的域名，不会再碰被污染的 bgm.tv。
+输入：  *
+* ============== 部署（3 步）==============
+*  1. 把下面 CONFIG 里的 API_HOST / IMG_HOST 改成你的两个域名。
+*  2. Cloudflare 仪表板 -> 工作人员和页面 -> 创建 -> 粘贴本文件 -> 部署。
+* 3. 进入该 Worker -> Settings -> Domains & Routes -> Add Custom Domain
+*     把上面填的两个域名都绑上去。
+输入：  *
+* 域名随便取、根域不限，只要这里填对哪个是 API、哪个是图片即可。
+* 调试：访问 https://你的域名/__health 查看识别到的角色和上游。
+* /
 
-// ====== CONFIG（必填：填你的两个域名）======
-const API_HOST = "api.example.com"; // 你的 API 域名（代理 api.bgm.tv）
-const IMG_HOST = "img.example.com"; // 你的图片域名（代理 lain.bgm.tv）
+// ====== 配置（必填：填你的两个域名）======
+const API_HOST = "api.example.com"; // api.xxr.com（代理 api.bgm.tv）
+常量 IMG_HOST = "img.example.com"; // lain.xxr.com（代理 lain.bgm.tv）
 
 // 上游（不要改）
-const BGM_API = "api.bgm.tv";
-const BGM_IMG = "lain.bgm.tv";
+常量 BGM_接口 = "api.bgm.tv";
+常量 背景音乐图片 = "lain.bgm.tv";
 
 // 图片缓存时长（秒），默认 30 天
-const IMG_CACHE_TTL = 30 * 24 * 60 * 60;
+常量 IMG_CACHE_TTL = 30 * 24 * 60 * 60;
 
-export default {
-  async fetch(request, env, ctx) {
-    const url = new URL(request.url);
-    const host = url.hostname;
+导出 默认 {
+  异步 获取(请求, 环境, 上下文) {
+    常量 网址 = 新 网址对象(请求.网址);
+    常量 主机 = 网址.主机名;
 
     // CORS 预检
     if (request.method === "OPTIONS") {
